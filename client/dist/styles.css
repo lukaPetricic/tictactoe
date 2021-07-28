@@ -1,0 +1,15 @@
+table td {
+  cursor: pointer;
+  width: 100px;
+  height: 100px;
+  text-align: center;
+  font-family: 'Fredoka One';
+  font-size: 47px;
+  border: 3px solid rgb(51,47,70);
+}
+
+table {
+  border-collapse: collapse;
+  border-style: hidden;
+  margin-top: 70px;
+}

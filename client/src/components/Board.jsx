@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 
-function Board({ board, updateBoard, myTurn, mySign }) {
+function Board({ board, updateBoard, myTurn, mySign, winner }) {
   function handleClick(i, j) {
-    if (myTurn && !board[i][j]) {
+    if (myTurn && !board[i][j] && !winner) {
       updateBoard(i, j)
     }
   }

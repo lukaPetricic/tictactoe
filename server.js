@@ -4,7 +4,7 @@ const app = express()
 const PORT = 3000
 const io = require('socket.io')(4000, {
   cors: {
-    origin: 'http://localhost:3000',
+    origin: 'http://192.168.86.243:3000',
     methods: ['GET', 'POST']
   }
 })
@@ -29,7 +29,7 @@ io.on('connection', socket => {
       pairs[newUserId] = partnerId;
 
       io.to(partnerId).emit('partnerId', newUserId);
-      io.to(partnerId).emit('sign', randomSign ? 'O' : 'XS');
+      io.to(partnerId).emit('sign', randomSign ? 'O' : 'X');
       pairs[partnerId] = newUserId;
     }
   })

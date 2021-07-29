@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import Board from './Board.jsx';
-import { io } from "socket.io-client";
-const socket = io("http://localhost:4000");
+import isThereAWinner from '../controllers/winLogic.js';
+import { io } from 'socket.io-client';
+const socket = io('http://192.168.86.243:4000');
 
 function App() {
   const emptyBoard = Array.from(Array(3), () => ([0, 0, 0]));
@@ -11,6 +12,7 @@ function App() {
   const [myTurn, setMyTurn] = useState(false);
   const [partnerId, setPartnerId] = useState('');
   const [partnerLeft, setPartnerLeft] = useState(false);
+  const [winner, setWinner] = useState(null)
 
   socket.on('connect', () => {
     socket.emit('new user', socket.id)
@@ -18,7 +20,11 @@ function App() {
 
   socket.on('partnerId', newPartnerId => {
     setPartnerId(newPartnerId)
-    console.log('Paired with: ', newPartnerId)
+  })
+
+  socket.on('sign', (arg) => {
+    setMySign(arg)
+    arg === 'O' ? setMyTurn(true) : setMyTurn(false)
   })
 
   socket.on('turn', (args) => {
@@ -27,11 +33,7 @@ function App() {
     let newBoard = JSON.parse(JSON.stringify(board));
     newBoard[i][j] = mySign === 'X' ? 'O' : 'X';
     setBoard(newBoard);
-  })
-
-  socket.on('sign', (arg) => {
-    setMySign(arg)
-    arg === 'O' ? setMyTurn(true) : setMyTurn(false)
+    setWinner(isThereAWinner(newBoard))
   })
 
   socket.on('partner left', () => {
@@ -48,11 +50,15 @@ function App() {
     setBoard(newBoard);
     setMyTurn(false);
     socket.emit('turn', [i, j, partnerId])
+    setWinner(isThereAWinner(newBoard))
   }
 
   function findNewPartner() {
-    console.log('Play again')
-    setPartnerLeft(false)
+    setBoard(emptyBoard);
+    setMySign('');
+    setMyTurn(false);
+    setPartnerId('')
+    setWinner(false)
     socket.emit('new user', socket.id)
   };
 
@@ -63,7 +69,12 @@ function App() {
           <div>{myTurn ? 'Your turn' : 'Your opponent is playing'}</div>
           <div>You are playing as {mySign}</div>
         </div>
-        <Board board={board} updateBoard={updateBoard} myTurn={myTurn} mySign={mySign} />
+        <Board board={board} updateBoard={updateBoard} myTurn={myTurn} mySign={mySign} winner={winner} />
+        {winner &&
+          <>
+            <div>{winner === mySign ? 'You have won!' : 'You lost.'}</div>
+            <button onClick={findNewPartner}>Play another round</button>
+          </>}
       </>
     )
   } else if (partnerLeft) {
@@ -75,7 +86,7 @@ function App() {
     )
   } else {
     return (
-      <div>Looking for your victim...</div>
+      <div>Looking for your opponent...</div>
     )
   }
 }
